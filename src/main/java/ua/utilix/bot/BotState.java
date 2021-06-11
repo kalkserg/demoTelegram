@@ -64,7 +64,7 @@ public enum BotState {
 
         @Override
         public void handleInput(BotContext context) {
-            System.out.println("conte " + context.getInput());
+            //System.out.println("conte " + context.getInput());
             if (context.getInput().toLowerCase(Locale.ROOT).contains("y")) {
                 next = Done;
                 sendMessage(context, "Registred!");
@@ -110,8 +110,7 @@ public enum BotState {
         if (states == null) {
             states = BotState.values();
         }
-        System.out.println(states);
-        System.out.println(states[id] + " " + id);
+        System.out.println("state "+states[id] + " id " + id);
         return states[id];
     }
 

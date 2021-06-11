@@ -2,9 +2,8 @@ package ua.utilix.controller;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -32,7 +31,7 @@ public class myController {
         this.userService = userService;
     }
 
-    //String text ="";
+    String text ="";
 //    @RequestMapping(value = "/greeting")
 //    public String helloWorldController(@RequestParam(name = "name", required = false, defaultValue = "World!") String name, Model model) {
 //        model.addAttribute("name", name);
@@ -60,13 +59,13 @@ public class myController {
         //HelloWorldBot helloWorldBot = new HelloWorldBot();
 
         //return "byby";
-    }
+    },
 
 
 
      */
     @PostMapping()
-    public ResponseEntity<String> postBody(@RequestBody(required = false) String str) {
+    public String postBody(@RequestBody(required = false) String str, Model model) {
         System.out.println("post  " + str);
         //Message m = new Message();
         //m.setText(str);
@@ -111,7 +110,12 @@ public class myController {
         }catch (Exception e){
             System.out.println("There is not user");
         }
-        return new ResponseEntity<String>(HttpStatus.OK);
+        //return new ResponseEntity<String>(HttpStatus.OK);
+
+        if (str!=null) { text = text + str + "\n";model.addAttribute("str", text);}
+        else model.addAttribute("str", "EMPTY");
+        return "sample";
+
     }
 
 }
