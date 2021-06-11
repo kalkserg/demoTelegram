@@ -30,7 +30,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "AND u.sigfoxId IS NOT NULL")
     List<User> findNewUsers();
 
-    User findByChatId(long id);
+    User[] findByChatId(long id);
 
-    User findBySigfoxId(String id);
+    User findByChatIdAndSigfoxId(long id, String sigfoxId);
+
+    User findBySigfoxId(String sigfoxId);
+
+    //User findBySigfoxName(long id, String sigfoxName);
 }

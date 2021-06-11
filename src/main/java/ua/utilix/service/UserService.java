@@ -17,14 +17,19 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User findByChatId(long id) {
+    public User[] findByChatId(long id) {
         return userRepository.findByChatId(id);
     }
 
     @Transactional(readOnly = true)
-    public User findBySigfoxId(String id) {
-        System.out.println(userRepository.findBySigfoxId(id));
-        return userRepository.findBySigfoxId(id);
+    public User findByChatIdAndSigfoxId(long id, String sigfoxId) {
+        return userRepository.findByChatIdAndSigfoxId(id,sigfoxId);
+    }
+
+    @Transactional(readOnly = true)
+    public User findBySigfoxId(String sigfoxId) {
+        System.out.println(userRepository.findBySigfoxId(sigfoxId));
+        return userRepository.findBySigfoxId(sigfoxId);
     }
 
     @Transactional(readOnly = true)
@@ -44,7 +49,12 @@ public class UserService {
 
     @Transactional
     public void addUser(User user) {
-        user.setAdmin(userRepository.count() == 0);
+        //user.setAdmin(userRepository.count() == 0);
+        user.setAdmin(true);
+//        User[] users = userRepository.findByChatId(user.getChatId());
+//        try{
+//            user.setAdmin(users[0].getChatId() == 1263775963);
+//        }catch (Exception ex){}
         userRepository.save(user);
     }
 

@@ -8,10 +8,13 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.utilix.model.User;
 import ua.utilix.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -22,6 +25,9 @@ public class ChatBot extends TelegramLongPollingBot {
 
     private static final String BROADCAST = "broadcast ";
     private static final String LIST_USERS = "users";
+
+    public static final String ADD_REQUEST = "Add";
+    public static final String REMOVE_REQUEST = "Del";
 
     @Value("${bot.name}")
     private String botName;
@@ -53,7 +59,15 @@ public class ChatBot extends TelegramLongPollingBot {
         final String text = update.getMessage().getText();
         final long chatId = update.getMessage().getChatId();
 
-        User user = userService.findByChatId(chatId);
+        User user = null;
+
+        User[] users = userService.findByChatId(chatId);
+        try {
+            user = users[users.length-1];
+        }catch (Exception e){}
+
+        //if(user != null) user =
+        findUserWithNullSigfoxName(users);
 
         if (checkIfAdminCommand(user, text))
             return;
@@ -61,8 +75,21 @@ public class ChatBot extends TelegramLongPollingBot {
         BotContext context;
         BotState state;
 
+        System.out.println(update.getMessage().getText());
+
         if (user == null) {
             state = BotState.getInitialState();
+
+            user = new User(chatId, text, state.ordinal());
+            userService.addUser(user);
+
+            context = BotContext.of(this, user, text);
+            state.enter(context);
+
+            LOGGER.info("New user registered: " + chatId);
+        } else if (update.getMessage().getText().equals(ADD_REQUEST)) {
+            state = BotState.Start;
+            //state = BotState.getInitialState();
 
             user = new User(chatId, state.ordinal());
             userService.addUser(user);
@@ -70,7 +97,7 @@ public class ChatBot extends TelegramLongPollingBot {
             context = BotContext.of(this, user, text);
             state.enter(context);
 
-            LOGGER.info("New user registered: " + chatId);
+            LOGGER.info("Add id registered: " + chatId);
         } else {
             context = BotContext.of(this, user, text);
             state = BotState.byId(user.getStateId());
@@ -89,7 +116,14 @@ public class ChatBot extends TelegramLongPollingBot {
         userService.updateUser(user);
     }
 
+
+
+
     private boolean checkIfAdminCommand(User user, String text) {
+        try {
+            System.out.println("admin " + user.toString());
+        }catch (Exception e){}
+
         if (user == null || !user.getAdmin())
             return false;
 
@@ -114,7 +148,9 @@ public class ChatBot extends TelegramLongPollingBot {
         var message = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
+                .replyMarkup(getMainMenu())
                 .build();
+        message.setParseMode("HTML");
         try {
             execute(message);
         } catch (TelegramApiException e) {
@@ -128,7 +164,9 @@ public class ChatBot extends TelegramLongPollingBot {
 
         users.forEach(user ->
             sb.append(user.getId())
-                    .append(' ')
+                    .append(" - <b>")
+                    .append(user.getSigfoxName())
+                    .append("</b> id: ")
                     .append(user.getSigfoxId())
                     .append("\r\n")
         );
@@ -139,5 +177,27 @@ public class ChatBot extends TelegramLongPollingBot {
     private void broadcast(String text) {
         List<User> users = userService.findAllUsers();
         users.forEach(user -> sendMessage(String.valueOf(user.getChatId()), text));
+    }
+
+    protected ReplyKeyboardMarkup getMainMenu(){
+        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
+        KeyboardRow row1 = new KeyboardRow();
+        row1.add(ADD_REQUEST);
+        row1.add(REMOVE_REQUEST);
+
+        List<KeyboardRow> rows = new ArrayList<>();
+        rows.add(row1);
+        markup.setKeyboard(rows);
+        markup.setResizeKeyboard(true);
+        return markup;
+    }
+
+    private User findUserWithNullSigfoxName(User[] users) {
+        for (int i = 0; i < users.length; i++) {
+            System.out.println(i + " " + users[i].getChatId() + " " + users[i].getSigfoxName() + " " + users[i].getSigfoxId() +" " + users[i].getStateId());
+            if (users[i].getSigfoxName() == null)
+                return users[i];
+        }
+        return null;
     }
 }

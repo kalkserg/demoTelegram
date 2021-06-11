@@ -78,18 +78,29 @@ public class myController {
         String sigfoxId = obj.getString("device");
         String unixTime = obj.getString("time");
         String data = obj.getString("data");
-        final String formattedDtm = Instant.ofEpochSecond(Long.parseLong(unixTime))
-                .atZone(ZoneId.of("GMT+3"))
-                .format(formatter);
-
-        sm.setText("<b>Device</b> " + sigfoxId + " push button at " + formattedDtm + " (<i>data " + data + "</i>)");
-        sm.setParseMode("HTML");
-        User user = userService.findBySigfoxId(sigfoxId);
+//        String sigfoxName = userService.findBySigfoxId(sigfoxId).getSigfoxName();
+//        final String formattedDtm = Instant.ofEpochSecond(Long.parseLong(unixTime))
+//                .atZone(ZoneId.of("GMT+3"))
+//                .format(formatter);
+//
+//        //sm.setText("<b>Device</b> " + sigfoxId + " push button at " + formattedDtm + " (<i>data " + data + "</i>)");
+//        sm.setText("<b>"+ sigfoxName + "</b> " + " push button" + sigfoxId);
+//        sm.setParseMode("HTML");
+//        User user = userService.findBySigfoxId(sigfoxId);
 //        User user = userService.findByChatId(1263775963);
 //        List<User> list = userService.findAllUsers();
 //        System.out.println(list.get(0).getChatId());
 //        System.out.println(list.get(0).getSigfoxId());
         try {
+            String sigfoxName = userService.findBySigfoxId(sigfoxId).getSigfoxName();
+            final String formattedDtm = Instant.ofEpochSecond(Long.parseLong(unixTime))
+                    .atZone(ZoneId.of("GMT+3"))
+                    .format(formatter);
+
+            //sm.setText("<b>Device</b> " + sigfoxId + " push button at " + formattedDtm + " (<i>data " + data + "</i>)");
+            sm.setText("<b>"+ sigfoxName + "</b> " + " push button " + sigfoxId);
+            sm.setParseMode("HTML");
+            User user = userService.findBySigfoxId(sigfoxId);
             sm.setChatId(String.valueOf(user.getChatId()));
 
             //sm.setChatId(String.valueOf(1263775963));

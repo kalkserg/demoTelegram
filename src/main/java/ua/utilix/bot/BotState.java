@@ -3,12 +3,31 @@ package ua.utilix.bot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.Locale;
+
 public enum BotState {
 
     Start {
         @Override
         public void enter(BotContext context) {
             sendMessage(context, "Hello!");
+        }
+
+        @Override
+        public BotState nextState() {
+            return EnterSigfoxName;
+        }
+    },
+
+    EnterSigfoxName {
+        @Override
+        public void enter(BotContext context) {
+            sendMessage(context, "Enter message from Sigfox Device please:");
+        }
+
+        @Override
+        public void handleInput(BotContext context) {
+            context.getUser().setSigfoxName(context.getInput());
         }
 
         @Override
@@ -26,6 +45,8 @@ public enum BotState {
         @Override
         public void handleInput(BotContext context) {
             context.getUser().setSigfoxId(context.getInput());
+            context.getUser().setNotified(true);
+            sendMessage(context, "Ok? Yes:No");
         }
 
         @Override
@@ -35,20 +56,27 @@ public enum BotState {
     },
 
     Registred {
+        private BotState next;
         @Override
         public void enter(BotContext context) {
-            sendMessage(context, "Registred!");
+            //sendMessage(context, "Ok? Yes:No");
         }
 
         @Override
         public void handleInput(BotContext context) {
-            context.getUser().setNotified(true);
+            System.out.println("conte " + context.getInput());
+            if (context.getInput().toLowerCase(Locale.ROOT).contains("y")) {
+                next = Done;
+                sendMessage(context, "Registred!");
+            } else {
+                next = EnterSigfoxName;
+                sendMessage(context, "Begin");
+            }
         }
 
         @Override
         public BotState nextState() {
-
-            return Done;
+            return next;
         }
     },
 
@@ -82,7 +110,8 @@ public enum BotState {
         if (states == null) {
             states = BotState.values();
         }
-
+        System.out.println(states);
+        System.out.println(states[id] + " " + id);
         return states[id];
     }
 
@@ -90,6 +119,7 @@ public enum BotState {
         var message = SendMessage.builder()
                 .chatId(String.valueOf(context.getUser().getChatId()))
                 .text(text)
+                .replyMarkup(context.getBot().getMainMenu())
                 .build();
         try {
             context.getBot().execute(message);
@@ -104,6 +134,7 @@ public enum BotState {
 
     public void handleInput(BotContext context) {
         // do nothing by default
+        System.out.println("need next");
     }
 
     public abstract void enter(BotContext context);
