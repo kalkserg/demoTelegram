@@ -2,6 +2,8 @@ package ua.utilix.controller;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,7 +67,7 @@ public class myController {
 
      */
     @PostMapping()
-    public String postBody(@RequestBody(required = false) String str, Model model) {
+    public ResponseEntity<String> postBody(@RequestBody(required = false) String str, Model model) {
         System.out.println("post  " + str);
         //Message m = new Message();
         //m.setText(str);
@@ -110,11 +112,11 @@ public class myController {
         }catch (Exception e){
             System.out.println("There is not user");
         }
-        //return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<String>(HttpStatus.OK);
 
-        if (str!=null) { text = text + str + "\n";model.addAttribute("str", text);}
-        else model.addAttribute("str", "EMPTY");
-        return "sample";
+//        if (str!=null) { text = text + str + "\n";model.addAttribute("str", text);}
+//        else model.addAttribute("str", "EMPTY");
+//        return "sample";
 
     }
 
