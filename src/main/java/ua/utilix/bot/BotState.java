@@ -46,7 +46,6 @@ public enum BotState {
         public void handleInput(BotContext context) {
             context.getUser().setSigfoxId(context.getInput());
             context.getUser().setNotified(true);
-            sendMessage(context, "Ok? Yes:No");
         }
 
         @Override
@@ -59,7 +58,7 @@ public enum BotState {
         private BotState next;
         @Override
         public void enter(BotContext context) {
-            //sendMessage(context, "Ok? Yes:No");
+            sendMessage(context, "Ok? Yes:No");
         }
 
         @Override
@@ -89,6 +88,78 @@ public enum BotState {
         public BotState nextState() {
             return Done;
         }
+    },
+
+    BeginRemoving {
+        @Override
+        public void enter(BotContext context) { sendMessage(context, "Enter ID for deleting please:"); }
+
+//        @Override
+//        public void handleInput(BotContext context) {
+//            context.getUser().setId(Long.parseLong(context.getInput()));
+//            System.out.println("start removing context " +Long.parseLong(context.getInput()) );
+//        }
+
+        @Override
+        public BotState nextState() {
+            return Removing;
+        }
+    },
+
+    Removing {
+//        private BotState next;
+        @Override
+        public void enter(BotContext context) { }
+
+        @Override
+        public void handleInput(BotContext context) {
+            context.getUser().setId(Long.parseLong(context.getInput()));
+            System.out.println("start removing context " +Long.parseLong(context.getInput()) );
+        }
+
+//        @Override
+//        public void handleInput(BotContext context) {
+//            if (context.getInput().toLowerCase(Locale.ROOT).contains("y")) {
+//                next = Done;
+//                sendMessage(context, "Deleted!");
+//            } else {
+//                next = BeginRemoving;
+//                sendMessage(context, "Begin removing");
+//            }
+//        }
+
+        @Override
+        public BotState nextState() {
+            return Removed;
+        }
+    },
+
+    Removed {
+        private BotState next;
+        @Override
+        public void enter(BotContext context) { sendMessage(context, "Yes:No"); }
+
+        @Override
+        public void handleInput(BotContext context) {
+            context.getUser().setId(Long.parseLong(context.getInput()));
+            System.out.println("start removing context " +Long.parseLong(context.getInput()) );
+        }
+
+//        @Override
+//        public void handleInput(BotContext context) {
+//            if (context.getInput().toLowerCase(Locale.ROOT).contains("y")) {
+//                next = Done;
+//                sendMessage(context, "Deleted!");
+//            } else {
+//                next = BeginRemoving;
+//                sendMessage(context, "Begin removing");
+//            }
+//        }
+
+        @Override
+        public BotState nextState() {
+            return next;
+        }
     };
 
     private static BotState[] states;
@@ -110,7 +181,7 @@ public enum BotState {
         if (states == null) {
             states = BotState.values();
         }
-        System.out.println("state "+states[id] + " id " + id);
+        //System.out.println("byId state " + states[id] + " id " + id);
         return states[id];
     }
 
@@ -128,6 +199,7 @@ public enum BotState {
     }
 
     public boolean isInputNeeded() {
+        System.out.println("inputneeded "+inputNeeded);
         return inputNeeded;
     }
 

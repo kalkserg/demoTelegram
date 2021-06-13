@@ -29,6 +29,8 @@ public class ChatBot extends TelegramLongPollingBot {
     public static final String ADD_REQUEST = "Add";
     public static final String REMOVE_REQUEST = "Del";
 
+    boolean isDel = false;
+
     @Value("${bot.name}")
     private String botName;
 
@@ -60,6 +62,7 @@ public class ChatBot extends TelegramLongPollingBot {
         final long chatId = update.getMessage().getChatId();
 
         User user = null;
+        boolean  isDel2 = false;
 
         User[] users = userService.findByChatId(chatId);
         try {
@@ -72,8 +75,8 @@ public class ChatBot extends TelegramLongPollingBot {
         if (checkIfAdminCommand(user, text))
             return;
 
-        BotContext context;
-        BotState state;
+        BotContext context = null;
+        BotState state = null;
 
         System.out.println(update.getMessage().getText());
 
@@ -85,7 +88,7 @@ public class ChatBot extends TelegramLongPollingBot {
 
             context = BotContext.of(this, user, text);
             state.enter(context);
-
+//            isDel = false;
             LOGGER.info("New user registered: " + chatId);
         } else if (update.getMessage().getText().equals(ADD_REQUEST)) {
             state = BotState.Start;
@@ -96,24 +99,70 @@ public class ChatBot extends TelegramLongPollingBot {
 
             context = BotContext.of(this, user, text);
             state.enter(context);
-
+            isDel = false;
+            isDel2 = false;
             LOGGER.info("Add id registered: " + chatId);
-        } else {
+        } else if (update.getMessage().getText().equals(REMOVE_REQUEST)) {
+            //state = BotState.Start;
+            state = BotState.BeginRemoving;
+            user = new User(chatId, state.ordinal());
+            //long id = Long.parseLong(text)
+            //user = findUserById(users,id);
+            //userService.delUser(user);
+            isDel = true;
+            context = BotContext.of(this, user, text);
+            state.enter(context);
+//            System.out.println("getid "+context.getUser().getId());
+//            System.out.println("getinput " + context.getInput());
+//            System.out.println("getBotname " + context.getBot().botName);
+
+            LOGGER.info("Del state: " + state);
+        } else if(!(isDel)){
+            System.out.println("isDel false");
             context = BotContext.of(this, user, text);
             state = BotState.byId(user.getStateId());
-
             LOGGER.info("Update received for user in state: " + state);
+        } else if(isDel) {
+            System.out.println("isDel true" +  Long.parseLong(text));
+            user = findUserById(users, Long.parseLong(text));
+            //System.out.println("state " + state.ordinal());
+            user.setStateId(BotState.BeginRemoving.ordinal());
+            context = BotContext.of(this, user, text);
+            state = BotState.byId(user.getStateId());
+            isDel2 = true;
+            LOGGER.info("DEl received for user in state: " + state);
         }
 
         state.handleInput(context);
 
-        do {
-            state = state.nextState();
-            state.enter(context);
-        } while (!state.isInputNeeded());
+        //save chain doing
+        if(state.nextState() == BotState.Start || state.nextState() == BotState.EnterSigfoxName || state.nextState() == BotState.EnterSigfoxID || state.nextState() == BotState.Registred) {
+            do {
+                state = state.nextState();
+                state.enter(context);
+            } while (!state.isInputNeeded());
 
-        user.setStateId(state.ordinal());
-        userService.updateUser(user);
+            user.setStateId(state.ordinal());
+            userService.updateUser(user);
+        }
+        //delete chain doing
+        else{
+            //if(isDel)
+            if(state.nextState() == BotState.BeginRemoving || state.nextState() == BotState.Removing || state.nextState() == BotState.Removed) {
+                do {
+                    state = state.nextState();
+                    state.enter(context);
+                    System.out.println("next state  " + context.getUser().getStateId() + " " + context.getUser().getChatId());
+                } while (!state.isInputNeeded());
+                if(isDel2) {
+                    userService.delUser(context.getUser());
+                    isDel2 = false;
+                    isDel = false;
+                }
+            }
+
+        }
+
     }
 
 
@@ -166,7 +215,7 @@ public class ChatBot extends TelegramLongPollingBot {
             sb.append(user.getId())
                     .append(" - <b>")
                     .append(user.getSigfoxName())
-                    .append("</b> id: ")
+                    .append("</b> SigfoxId: ")
                     .append(user.getSigfoxId())
                     .append("\r\n")
         );
@@ -194,9 +243,21 @@ public class ChatBot extends TelegramLongPollingBot {
 
     private User findUserWithNullSigfoxName(User[] users) {
         for (int i = 0; i < users.length; i++) {
-            System.out.println(i + " " + users[i].getChatId() + " " + users[i].getSigfoxName() + " " + users[i].getSigfoxId() +" " + users[i].getStateId());
+            System.out.println(users[i].getId() + " " + users[i].getChatId() + " " + users[i].getSigfoxName() + " " + users[i].getSigfoxId() +" " + users[i].getStateId());
             if (users[i].getSigfoxName() == null)
                 return users[i];
+        }
+        return null;
+    }
+
+    private User findUserById(User[] users, long id) {
+        for (int i = 0; i < users.length; i++) {
+            //System.out.println(users[i].getId() + " " + users[i].getChatId() + " " + users[i].getSigfoxName() + " " + users[i].getSigfoxId() +" " + users[i].getStateId());
+            if (users[i].getId() == id) {
+                System.out.println( " find " + users[i].getId());
+                return users[i];
+            }
+            System.out.println( " f " + users[i].getId());
         }
         return null;
     }
