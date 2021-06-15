@@ -11,29 +11,22 @@ public class User {
     private Long id;
 
     private Long chatId;
-    private Integer stateId;
-    private String sigfoxName;
-    private String sigfoxId;
+    private String sigfoxName = "";
+    private String sigfoxId = "";
     private Boolean admin;
     private Boolean notified = false;
 
     public User() {
     }
 
-    public User(Long chatId, Integer state) {
-        this.chatId = chatId;
-        this.stateId = state;
-    }
-
-    public User(Long chatId, String sigfoxId, Integer state) {
+    public User(Long chatId, String sigfoxName, String sigfoxId) {
         this.chatId = chatId;
         this.sigfoxId = sigfoxId;
-        this.stateId = state;
+        this.sigfoxName = sigfoxName;
     }
 
-    public User(Long chatId, Integer stateId, Boolean admin) {
+    public User(Long chatId, Boolean admin) {
         this.chatId = chatId;
-        this.stateId = stateId;
         this.admin = admin;
     }
 
@@ -68,13 +61,6 @@ public class User {
         this.chatId = chatId;
     }
 
-    public Integer getStateId() {
-        return stateId;
-    }
-
-    public void setStateId(Integer stateId) {
-        this.stateId = stateId;
-    }
 
     public Boolean getAdmin() {
         return admin;

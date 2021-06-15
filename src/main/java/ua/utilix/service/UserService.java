@@ -21,15 +21,25 @@ public class UserService {
         return userRepository.findByChatId(id);
     }
 
+    @Transactional(readOnly = true)
+    public User findById(long id) {
+        return userRepository.findById(id);
+    }
+
 //    @Transactional(readOnly = true)
 //    public User findByChatIdAndSigfoxId(long id, String sigfoxId) {
 //        return userRepository.findByChatIdAndSigfoxId(id,sigfoxId);
 //    }
 
     @Transactional(readOnly = true)
-    public User findBySigfoxId(String sigfoxId) {
+    public User[] findBySigfoxId(String sigfoxId) {
         System.out.println(userRepository.findBySigfoxId(sigfoxId));
         return userRepository.findBySigfoxId(sigfoxId);
+    }
+
+    @Transactional(readOnly = true)
+    public User findByChatIdAndSigfoxId(long Id, String sigfoxId) {
+        return userRepository.findByChatIdAndSigfoxId(Id,sigfoxId);
     }
 
     @Transactional(readOnly = true)

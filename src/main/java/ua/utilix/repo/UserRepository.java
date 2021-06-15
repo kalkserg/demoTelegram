@@ -34,9 +34,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     User[] findByChatId(long chatId);
 
-    //User findByChatIdAndSigfoxId(long id, String sigfoxId);
+    User findByChatIdAndSigfoxId(long id, String sigfoxId);
 
-    User findBySigfoxId(String sigfoxId);
+    User[] findBySigfoxId(String sigfoxId);
 
     //User findBySigfoxName(long id, String sigfoxName);
 }

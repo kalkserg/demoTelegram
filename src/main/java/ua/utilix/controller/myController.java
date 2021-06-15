@@ -93,22 +93,26 @@ public class myController {
 //        System.out.println(list.get(0).getChatId());
 //        System.out.println(list.get(0).getSigfoxId());
         try {
-            String sigfoxName = userService.findBySigfoxId(sigfoxId).getSigfoxName();
-            final String formattedDtm = Instant.ofEpochSecond(Long.parseLong(unixTime))
-                    .atZone(ZoneId.of("GMT+3"))
-                    .format(formatter);
+            User[] users = userService.findBySigfoxId(sigfoxId);
+            for(User user : users) {
+                String sigfoxName = user.getSigfoxName();
+                Long chatId = user.getChatId();
+                final String formattedDtm = Instant.ofEpochSecond(Long.parseLong(unixTime))
+                        .atZone(ZoneId.of("GMT+3"))
+                        .format(formatter);
 
-            //sm.setText("<b>Device</b> " + sigfoxId + " push button at " + formattedDtm + " (<i>data " + data + "</i>)");
-            sm.setText("<b>"+ sigfoxName + "</b> " + " push button " + sigfoxId);
-            sm.setParseMode("HTML");
-            User user = userService.findBySigfoxId(sigfoxId);
-            sm.setChatId(String.valueOf(user.getChatId()));
+                //sm.setText("<b>Device</b> " + sigfoxId + " push button at " + formattedDtm + " (<i>data " + data + "</i>)");
+                sm.setText("<b>" + sigfoxName + "</b> " + " push button " + sigfoxId + "  chat " + chatId);
+                sm.setParseMode("HTML");
+                //User user = userService.findBySigfoxId(sigfoxId);
+                sm.setChatId(String.valueOf(chatId));
 
-            //sm.setChatId(String.valueOf(1263775963));
+                //sm.setChatId(String.valueOf(1263775963));
 
-            //sendMessageService.test2(m);
-            //System.out.println(sm.getChatId());
-            sendMessageService.test3(sm);
+                //sendMessageService.test2(m);
+                System.out.println("send chatId " + sm.getChatId() + " " + sigfoxName + " " + " push button " + sigfoxId);
+                sendMessageService.test3(sm);
+            }
         }catch (Exception e){
             System.out.println("There is not user");
         }
